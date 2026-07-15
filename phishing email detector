@@ -1,0 +1,25 @@
+import streamlit as st
+st.title("Phishing email detection")#this just shows the title of the app
+import pandas as pd 
+import numpy as np
+from sklearn.model_selection import train_test_split#this is used to split the data into training and testing data
+from sklearn.feature_extraction.text import TfidfVectorizer#this is used to convert the text data into numerical data
+from sklearn.linear_model import LogisticRegression#this is used to create a logistic regression model
+df=pd.read_csv('spam.csv',encoding='latin-1')#this is used to read the csv file and store it in a dataframe encoding='latin-1' is used to read the csv file because it contains special characters
+X=df['v2']#used to store email data in x variable
+y=df['v1']#used to store label data in y variable, label data is used to store whether the email is spam or not
+X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2)#this is used to split the data into training and testing data
+tfidf=TfidfVectorizer()#this is used to convert the text data into numerical data
+X_train_tfidf=tfidf.fit_transform(X_train)#this is used to transform the training data into a sparse matrix
+X_test_tfidf=tfidf.transform(X_test)#this is used to transform the testing data into a sparse matrix
+model=LogisticRegression()#this is used to create a logistic regression model
+model.fit(X_train_tfidf,y_train)#this is used to train the model
+st.write("accuracy:",model.score(X_test_tfidf,y_test))#this is used to display the accuracy of the model
+email=st.text_area("Enter your email here")#this is used to create a text area for the user to enter their email
+if st.button("Check Email"):#this is used to create a button(button means click) for the user to check the email
+    email_tfidf=tfidf.transform([email])#this is used to transform the email entered by the user into a sparse matrix
+    prediction=model.predict(email_tfidf)#this is used to predict whether the email is spam or not
+    if prediction[0] == 'spam':
+        st.error("spam/phishing email detected")  #this is used to display the prediction made by the model
+    else:
+        st.success("Legitimate email")#this is used to display the prediction made by the model
